@@ -3,6 +3,8 @@ import User from "../models/userModel.js";
 import { successResponse } from "./responseController.js";
 import { findWithId } from "../services/findUser.js";
 import { deleteImage } from "../helper/deleteImage.js";
+import { createJsonWebToken } from "../helper/jsonWebToken.js";
+import { clientURL, jwtExpiresIn, jwtSecret } from "../secret.js";
 
 export const getUsers = async (req, res, next) => {
   try {
@@ -93,6 +95,59 @@ export const deleteUserById = async (req, res, next) => {
       message: "User deleted successfully",
       payload: {
         deleteUser,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const processRegister = async (req, res, next) => {
+  try {
+    const { name, email, password, phone, address } = req.body;
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      throw createHttpError(409, "User already exists with this email");
+    }
+
+    //jwt token creation can be added here later
+
+    const token = createJsonWebToken(
+      { name, email, password, phone, address },
+      jwtSecret,
+      jwtExpiresIn
+    );
+    console.log("Registration Token:", token);
+
+    // Prepare email verification logic here (e.g., send email with the token)
+
+    const emailData = {
+      to: email,
+      subject: "Verify your email",
+      text: `Please verify your email by clicking the following link: 
+      ${clientURL}/verify-email?token=${token}`,
+      html: `
+      <h2>Hello ${name}</h2>
+      <p>Please verify your email by clicking the following link:</p>
+             <a href="${clientURL}/verify-email?token=${token}">Verify Email</a>`,
+    };
+
+    // Note: User is not created in the database until email verification is done
+    //
+    const newUser = new User({
+      name,
+      email,
+      phone,
+      password,
+    });
+
+    return successResponse(res, {
+      statusCode: 201,
+      message: "User registered successfully",
+      payload: {
+        token,
       },
     });
   } catch (error) {

@@ -19,7 +19,9 @@
     "express": "^5.1.0",
     "express-rate-limit": "^8.2.1",
     "http-errors": "^2.0.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.20.0",
+    "nodemailer": "^7.0.10",
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {

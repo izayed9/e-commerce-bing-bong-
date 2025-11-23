@@ -23,3 +23,7 @@
     19.how to create services in the backend
     20.DELETE /api/users/:id Delete a single user by id
     21.Create a helper function for delete image
+    22.POST /api/uers/register -> Process the registation
+    23.Create JWT
+    24.setup smtp server and prepare email
+    22.POST /api/user/verify -> verify + register into the database

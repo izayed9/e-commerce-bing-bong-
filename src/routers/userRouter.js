@@ -3,6 +3,7 @@ import {
   getUsers,
   getUserById,
   deleteUserById,
+  processRegister,
 } from "../controllers/userController.js";
 
 const userRouter = express.Router();
@@ -29,4 +30,12 @@ userRouter.get("/:id", getUserById);
  */
 
 userRouter.delete("/:id", deleteUserById);
+
+/**
+ * @route   POST /api/users/process-register
+ * @desc    Register a new user
+ * @access  Public
+ */
+
+userRouter.post("/register", processRegister);
 export default userRouter;

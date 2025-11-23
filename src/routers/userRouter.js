@@ -1,5 +1,9 @@
 import express from "express";
-import { getUsers } from "../controllers/userController.js";
+import {
+  getUsers,
+  getUserById,
+  deleteUserById,
+} from "../controllers/userController.js";
 
 const userRouter = express.Router();
 
@@ -11,4 +15,18 @@ const userRouter = express.Router();
 
 userRouter.get("/", getUsers);
 
+/**
+ * @route   GET /api/users/:id
+ * @desc    Retrieve a single user by their unique ID
+ * @access  Public (or specify if private/protected)
+ */
+userRouter.get("/:id", getUserById);
+
+/**
+ * @route   DELETE /api/users/:id
+ * @desc    Delete a single user by their unique ID
+ * @access  Public (or specify if private/protected)
+ */
+
+userRouter.delete("/:id", deleteUserById);
 export default userRouter;

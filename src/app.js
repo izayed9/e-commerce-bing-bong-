@@ -5,6 +5,7 @@ import createHttpError from "http-errors";
 import rateLimit from "express-rate-limit";
 import userRouter from "./routers/userRouter.js";
 import seedRouter from "./routers/seedRouter.js";
+import { errorResponse } from "./controllers/responseController.js";
 
 const app = express();
 
@@ -35,8 +36,8 @@ app.use((req, res, next) => {
 
 // Server Error Handling middleware
 app.use((err, req, res, next) => {
-  return res.status(err.status || 500).json({
-    success: false,
+  return errorResponse(res, {
+    statusCode: err.status || 500,
     message: err.message,
   });
 });

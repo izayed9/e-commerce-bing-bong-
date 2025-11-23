@@ -17,3 +17,9 @@
     13.Connect to MongoDB Database
     14.Sxhema & Model for User
     15.create seed route for testing
+    16.Get /api/users -> isAdmin-> getAllUsers-> search by name->pagenation functionality
+    17.responseHandler controller for error or success
+    18.Get /api/users/:id get a single user by ID
+    19.how to create services in the backend
+    20.DELETE /api/users/:id Delete a single user by id
+    21.Create a helper function for delete image

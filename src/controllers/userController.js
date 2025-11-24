@@ -5,6 +5,7 @@ import { findWithId } from "../services/findUser.js";
 import { deleteImage } from "../helper/deleteImage.js";
 import { createJsonWebToken } from "../helper/jsonWebToken.js";
 import { clientURL, jwtExpiresIn, jwtSecret } from "../secret.js";
+import { emailWithNodeMailer } from "../helper/email.js";
 
 export const getUsers = async (req, res, next) => {
   try {
@@ -134,6 +135,12 @@ export const processRegister = async (req, res, next) => {
              <a href="${clientURL}/verify-email?token=${token}">Verify Email</a>`,
     };
 
+    try {
+      await emailWithNodeMailer(emailData);
+    } catch (error) {
+      next(createHttpError(500, "failed to verification"));
+      return;
+    }
     // Note: User is not created in the database until email verification is done
     //
     const newUser = new User({
@@ -145,7 +152,7 @@ export const processRegister = async (req, res, next) => {
 
     return successResponse(res, {
       statusCode: 201,
-      message: "User registered successfully",
+      message: "Please go to your email and complete the process",
       payload: {
         token,
       },

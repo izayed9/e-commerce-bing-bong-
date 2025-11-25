@@ -153,13 +153,6 @@ export const processRegister = async (req, res, next) => {
       return next(createHttpError(500, "Failed to send verification email"));
     }
 
-    const newUser = new User({
-      name,
-      email,
-      phone,
-      password,
-    });
-
     return successResponse(res, {
       statusCode: 201,
       message: "Please go to your email and complete the process",
@@ -173,7 +166,6 @@ export const processRegister = async (req, res, next) => {
 export const verifyUserEmail = async (req, res, next) => {
   try {
     const { token } = req.body;
-    console.log("Verification Token:", token);
     if (!token) {
       return next(createHttpError(400, "Verification token is missing"));
     }

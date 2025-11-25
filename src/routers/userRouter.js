@@ -6,6 +6,7 @@ import {
   processRegister,
   verifyUserEmail,
 } from "../controllers/userController.js";
+import { uploadFileMiddleware } from "../middlewares/uploadFile.js";
 
 const userRouter = express.Router();
 
@@ -38,7 +39,7 @@ userRouter.delete("/:id", deleteUserById);
  * @access  Public
  */
 
-userRouter.post("/register", processRegister);
+userRouter.post("/register", uploadFileMiddleware, processRegister);
 
 /**
  * @route   POST /api/users/verify

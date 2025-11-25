@@ -6,6 +6,7 @@ import { deleteImage } from "../helper/deleteImage.js";
 import { createJsonWebToken } from "../helper/jsonWebToken.js";
 import { clientURL, jwtExpiresIn, jwtSecret } from "../secret.js";
 import { emailWithNodeMailer } from "../helper/email.js";
+import jwt from "jsonwebtoken";
 
 export const getUsers = async (req, res, next) => {
   try {
@@ -106,15 +107,21 @@ export const deleteUserById = async (req, res, next) => {
 export const processRegister = async (req, res, next) => {
   try {
     const { name, email, password, phone, address } = req.body;
+    console.log("Registration Data:", req.body);
+
+    // ✅ Validate required fields
+    if (!name || !email || !password) {
+      return next(
+        createHttpError(400, "Name, email, and password are required")
+      );
+    }
 
     const existingUser = await User.findOne({ email });
-
     if (existingUser) {
       throw createHttpError(409, "User already exists with this email");
     }
 
-    //jwt token creation can be added here later
-
+    // JWT token creation
     const token = createJsonWebToken(
       { name, email, password, phone, address },
       jwtSecret,
@@ -122,27 +129,30 @@ export const processRegister = async (req, res, next) => {
     );
     console.log("Registration Token:", token);
 
-    // Prepare email verification logic here (e.g., send email with the token)
-
+    // Prepare email
     const emailData = {
-      to: email,
+      to: email, // ✅ make sure email exists
       subject: "Verify your email",
-      text: `Please verify your email by clicking the following link: 
-      ${clientURL}/verify-email?token=${token}`,
+      text: `Please verify your email by clicking the following link: ${clientURL}/verify-email?token=${token}`,
       html: `
-      <h2>Hello ${name}</h2>
-      <p>Please verify your email by clicking the following link:</p>
-             <a href="${clientURL}/verify-email?token=${token}">Verify Email</a>`,
+        <h2>Hello ${name}</h2>
+        <p>Please verify your email by clicking the following link:</p>
+        <a href="${clientURL}/verify-email?token=${token}">Verify Email</a>
+      `,
     };
+
+    // ✅ Check email field before sending
+    if (!emailData.to) {
+      return next(createHttpError(400, "Recipient email is missing"));
+    }
 
     try {
       await emailWithNodeMailer(emailData);
     } catch (error) {
-      next(createHttpError(500, "failed to verification"));
-      return;
+      console.error("Email send failed:", error);
+      return next(createHttpError(500, "Failed to send verification email"));
     }
-    // Note: User is not created in the database until email verification is done
-    //
+
     const newUser = new User({
       name,
       email,
@@ -153,9 +163,51 @@ export const processRegister = async (req, res, next) => {
     return successResponse(res, {
       statusCode: 201,
       message: "Please go to your email and complete the process",
-      payload: {
-        token,
-      },
+      payload: { token },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyUserEmail = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    console.log("Verification Token:", token);
+    if (!token) {
+      return next(createHttpError(400, "Verification token is missing"));
+    }
+
+    // Verify JWT token
+    let userData;
+    try {
+      userData = jwt.verify(token, jwtSecret);
+    } catch (err) {
+      return next(createHttpError(400, "Invalid or expired token"));
+    }
+
+    const { name, email, password, phone, address } = userData;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return next(createHttpError(409, "User already exists with this email"));
+    }
+
+    // Create new user
+    const newUser = new User({
+      name,
+      email,
+      password,
+      phone,
+      address,
+    });
+
+    await newUser.save();
+
+    return successResponse(res, {
+      statusCode: 201,
+      message: "User registered successfully",
     });
   } catch (error) {
     next(error);

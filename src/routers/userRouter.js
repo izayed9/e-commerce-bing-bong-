@@ -4,6 +4,7 @@ import {
   getUserById,
   deleteUserById,
   processRegister,
+  verifyUserEmail,
 } from "../controllers/userController.js";
 
 const userRouter = express.Router();
@@ -38,4 +39,11 @@ userRouter.delete("/:id", deleteUserById);
  */
 
 userRouter.post("/register", processRegister);
+
+/**
+ * @route   POST /api/users/verify
+ * @desc    Verify user email and complete registration
+ * @access  Public
+ */
+userRouter.post("/verify", verifyUserEmail);
 export default userRouter;

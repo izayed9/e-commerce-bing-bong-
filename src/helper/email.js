@@ -1,30 +1,38 @@
 import nodemailer from "nodemailer";
-import { smtpPassword, smtpUsername } from "../secret.js";
+import { smtpUsername, smtpPassword } from "../secret.js";
 
-// Create a transporter object using SMTP transport
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || "smtp.gmail.com",
-  port: Number(process.env.EMAIL_PORT) || 465, // try 465 if 587 times out
-  secure: process.env.EMAIL_PORT === "465" || true, // true for 465, false for 587
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: smtpUsername,
-    pass: smtpPassword,
+    pass: smtpPassword, // Gmail App Password
   },
 });
 
 export const emailWithNodeMailer = async (emailData) => {
+  // ✅ Debug: log the emailData
+  console.log("Sending email to:", emailData.to);
+
+  if (!emailData || !emailData.to || emailData.to.trim() === "") {
+    throw new Error("Recipient email is missing!");
+  }
+
+  const mailOptions = {
+    from: `"E-commerce App" <${smtpUsername}>`, // proper from
+    to: emailData.to,
+    subject: emailData.subject || "No subject",
+    text: emailData.text || "",
+    html: emailData.html || "",
+  };
+
   try {
-    const emailInfo = {
-      from: smtpUsername,
-      to: emailData.email,
-      subject: emailData.subject,
-      text: emailData.text,
-      html: emailData.html,
-    };
-    const info = await transporter.sendMail(emailInfo);
-    console.log("Message sent:", info.response);
-  } catch (error) {
-    console.error("Message Failed due to error", error);
-    throw error;
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Email sent:", info.response);
+    return info;
+  } catch (err) {
+    console.error("❌ Email send failed:", err);
+    throw err;
   }
 };

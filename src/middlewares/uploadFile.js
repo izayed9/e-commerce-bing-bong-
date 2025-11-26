@@ -1,16 +1,8 @@
-import multer from "multer";
+import multer, { memoryStorage } from "multer";
 import { uploadPath } from "../secret.js";
 
 // ✅ Multer storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
-  },
-});
+const storage = multer.memoryStorage();
 
 // ✅ File filter for images only
 const fileFilter = (req, file, cb) => {

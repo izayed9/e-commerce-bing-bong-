@@ -7,6 +7,7 @@ import { createJsonWebToken } from "../helper/jsonWebToken.js";
 import { clientURL, jwtExpiresIn, jwtSecret } from "../secret.js";
 import { emailWithNodeMailer } from "../helper/email.js";
 import jwt from "jsonwebtoken";
+import { runValidationRules } from "../validators/index.js";
 
 export const getUsers = async (req, res, next) => {
   try {
@@ -107,14 +108,18 @@ export const deleteUserById = async (req, res, next) => {
 export const processRegister = async (req, res, next) => {
   try {
     const { name, email, password, phone, address } = req.body;
-    console.log("Registration Data:", req.body);
 
-    // ✅ Validate required fields
-    if (!name || !email || !password) {
-      return next(
-        createHttpError(400, "Name, email, and password are required")
-      );
+    // image validation about size and existence
+    if (!req.file || !req.file.buffer) {
+      return next(createHttpError(400, "User image is required"));
     }
+    if (req.file.size > 2 * 1024 * 1024) {
+      return next(createHttpError(400, "Image size should not exceed 2MB"));
+    }
+
+    const imageBufferString = req.file
+      ? req.file.buffer.toString("base64")
+      : null;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -127,7 +132,6 @@ export const processRegister = async (req, res, next) => {
       jwtSecret,
       jwtExpiresIn
     );
-    console.log("Registration Token:", token);
 
     // Prepare email
     const emailData = {
@@ -200,6 +204,57 @@ export const verifyUserEmail = async (req, res, next) => {
     return successResponse(res, {
       statusCode: 201,
       message: "User registered successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateUserById = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const option = { password: 0 };
+    await findWithId(User, userId, option);
+    const updatedOption = {
+      new: true,
+      runValidationRules: true,
+      context: "query",
+    };
+
+    let updateData = {};
+
+    const fields = ["name", "password", "phone", "address"];
+
+    // Loop through each field and add if exists
+    fields.forEach((field) => {
+      if (req.body[field]) {
+        updateData[field] = req.body[field];
+      }
+    });
+
+    if (req.file) {
+      if (req.file.size > 2 * 1024 * 1024) {
+        return next(createHttpError(400, "Image size should not exceed 2MB"));
+      }
+      updateData.image = req.file.buffer.toString("base64");
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      updatedOption
+    ).select("-password");
+
+    if (!updatedUser) {
+      throw createHttpError(404, "User not found");
+    }
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "User updated successfully",
+      payload: {
+        updatedUser,
+      },
     });
   } catch (error) {
     next(error);

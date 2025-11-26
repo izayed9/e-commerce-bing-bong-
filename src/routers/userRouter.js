@@ -5,8 +5,11 @@ import {
   deleteUserById,
   processRegister,
   verifyUserEmail,
+  updateUserById,
 } from "../controllers/userController.js";
 import { uploadFileMiddleware } from "../middlewares/uploadFile.js";
+import { registerValidationRules } from "../validators/auth.js";
+import { runValidationRules } from "../validators/index.js";
 
 const userRouter = express.Router();
 
@@ -39,7 +42,13 @@ userRouter.delete("/:id", deleteUserById);
  * @access  Public
  */
 
-userRouter.post("/register", uploadFileMiddleware, processRegister);
+userRouter.post(
+  "/register",
+  uploadFileMiddleware,
+  registerValidationRules,
+  runValidationRules,
+  processRegister
+);
 
 /**
  * @route   POST /api/users/verify
@@ -47,4 +56,11 @@ userRouter.post("/register", uploadFileMiddleware, processRegister);
  * @access  Public
  */
 userRouter.post("/verify", verifyUserEmail);
+
+/**
+ * @route   PUT /api/users/:id
+ * @desc    Update user information by their unique ID
+ * @access  Public (or specify if private/protected)
+ */
+userRouter.put("/:id", uploadFileMiddleware, updateUserById);
 export default userRouter;

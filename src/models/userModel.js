@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
-import { defaultImage } from "../secret.js";
 
 const { Schema, model } = mongoose;
 
@@ -33,8 +32,8 @@ const userSchema = new Schema(
       set: (v) => bcrypt.hashSync(v, bcrypt.genSaltSync(10)),
     },
     image: {
-      type: String,
-      default: defaultImage,
+      type: Buffer,
+      contentType: String,
     },
     phone: {
       type: String,

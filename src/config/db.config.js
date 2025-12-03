@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { mongoURI } from "../secret.js";
-
 export const connectDB = async (option = {}) => {
   try {
     await mongoose.connect(mongoURI, option);

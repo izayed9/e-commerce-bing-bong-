@@ -10,6 +10,7 @@ import {
 import { uploadFileMiddleware } from "../middlewares/uploadFile.js";
 import { registerValidationRules } from "../validators/auth.js";
 import { runValidationRules } from "../validators/index.js";
+import { isLoggedIn } from "../middlewares/auth.js";
 
 const userRouter = express.Router();
 
@@ -19,14 +20,14 @@ const userRouter = express.Router();
  * @access  Public (or specify if private/protected)
  */
 
-userRouter.get("/", getUsers);
+userRouter.get("/", isLoggedIn, getUsers);
 
 /**
  * @route   GET /api/users/:id
  * @desc    Retrieve a single user by their unique ID
  * @access  Public (or specify if private/protected)
  */
-userRouter.get("/:id", getUserById);
+userRouter.get("/:id", isLoggedIn, getUserById);
 
 /**
  * @route   DELETE /api/users/:id
@@ -34,7 +35,7 @@ userRouter.get("/:id", getUserById);
  * @access  Public (or specify if private/protected)
  */
 
-userRouter.delete("/:id", deleteUserById);
+userRouter.delete("/:id", isLoggedIn, deleteUserById);
 
 /**
  * @route   POST /api/users/process-register
@@ -62,5 +63,5 @@ userRouter.post("/verify", verifyUserEmail);
  * @desc    Update user information by their unique ID
  * @access  Public (or specify if private/protected)
  */
-userRouter.put("/:id", uploadFileMiddleware, updateUserById);
+userRouter.put("/:id", isLoggedIn, uploadFileMiddleware, updateUserById);
 export default userRouter;

@@ -10,3 +10,4 @@ export const smtpUsername = process.env.SMTP_USERNAME;
 export const smtpPassword = process.env.SMTP_PASSWORD;
 export const clientURL = process.env.CLIENT_URL || "http://localhost:3000";
 export const uploadPath = process.env.UPLOAD_PATH || "public/images/users";
+export const jwtAccessKey = process.env.JWT_ACCESS_KEY || "default_access_key";

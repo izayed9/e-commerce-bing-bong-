@@ -6,6 +6,8 @@ import rateLimit from "express-rate-limit";
 import userRouter from "./routers/userRouter.js";
 import seedRouter from "./routers/seedRouter.js";
 import { errorResponse } from "./controllers/responseController.js";
+import authRouter from "./routers/authRouter.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
@@ -17,8 +19,12 @@ const rateLimiter = rateLimit({
 
 app.use(rateLimiter);
 app.use(morgan("short"));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/test", (req, res) => {
   res.status(200).send({
@@ -28,6 +34,7 @@ app.get("/test", (req, res) => {
 
 app.use("/api/users", userRouter);
 app.use("/api/seed", seedRouter);
+app.use("/api/auth", authRouter);
 
 // client error handling middleware
 app.use((req, res, next) => {
